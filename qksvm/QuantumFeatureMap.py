@@ -14,10 +14,10 @@ class QuantumFeatureMap(QuantumCircuit):
         num_qubits: int,
         num_layers: int,
         gates: Sequence[str],
-        scale: bool = True,
+        scale: bool = False,
         alpha: float = 2.0,
-        repeat: bool = False,
-        entanglement: Union[str, list] = "ring",
+        repeat: bool = True,
+        entanglement: Union[str, list] = "linear",
         name: str = "QuantumFeatureMap",
 
     ) -> None:
@@ -28,10 +28,10 @@ class QuantumFeatureMap(QuantumCircuit):
             num_qubits: Number of qubits (feature map width)
             num_layers: Number of repeating layers (feature map depth)
             gates: List of gates used to encode (CAPITAL) and train (small) the data
-            scale: Include data scaling prefactor as an additional variational parameter (default=True)
-            alpha: Value of the data scaling prefactor when scale=False (default=2.0)
-            repeat: Repeating encoding scheme, which works in the case when num_features < num_qubits (default=False)
-            entanglement: Entanglement structure of the circuit ('linear', 'ring', 'full') (default='ring')
+            scale: Include data scaling prefactor as an additional variational parameter (default=False)
+            alpha: Value of the fixed data scaling prefactor when scale=False (default=2.0)
+            repeat: Repeating encoding scheme, which works in the case when num_features < num_qubits (default=True)
+            entanglement: Entanglement structure of the circuit ('linear', 'ring', 'full') (default='linear')
             name: Name of QuantumCircuit object
 
         Usage:
@@ -71,7 +71,7 @@ class QuantumFeatureMap(QuantumCircuit):
             self.generate_map(entanglement)
         else:
             self.entanglement = entanglement
-            
+        
         # setup parameters for encoding and training
         self.setup_parameters(gates)
 
@@ -133,7 +133,7 @@ class QuantumFeatureMap(QuantumCircuit):
         """
         # Parametrized gates
         r_gates = ['rx', 'ry', 'rz', ]
-        cr_gates = ['crx', 'cry', 'crz', ]
+        cr_gates = ['crx', 'cry', 'crz', 'rxx', 'ryy', 'rzz', 'rzx', ]
         
         #--------------------------------
         # Set training parameters vector
@@ -195,7 +195,7 @@ class QuantumFeatureMap(QuantumCircuit):
 
         try:
             _gate = getattr(self, gate)
-            if gate in ['crx', 'cry', 'crz']:
+            if gate in ['crx', 'cry', 'crz', 'rxx', 'ryy', 'rzz', 'rzx', 'rzx']:
                 for pair in self.entanglement:
                     if not self.repeat: check(j)
                     _gate(params[j%num_params], pair[0], pair[1]); j += 1

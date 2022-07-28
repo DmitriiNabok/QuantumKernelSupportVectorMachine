@@ -21,7 +21,7 @@ from sklearn.svm import SVC
 
 #-------------------------------------------------------------------    
 def QSVM_QKE(fm,
-             X_train, y_train, 
+             X_train=None, y_train=None,
              seed=None,
              backend=None,
              **kwargs,
@@ -29,27 +29,19 @@ def QSVM_QKE(fm,
     """Quantum Kernel Embedding algorithm.
     
     Args:
-        fm: 
-            Qiskit QuantumKernel instance
-        X_train, y_train: 
-            Training data
-        X_test, y_test: 
-            Testing data
-        seed (int): 
-            Random generator seed
-        backend: 
-            Qiskit backend instance
-        **kwargs: 
-            Other Scikit-Learn SVC parameters (e.g., C, class_weight, etc.)
+        fm (QuantumCircuit): Quantum Feature Map
+        X_train, y_train (nd.array): If provided, the classifier is fit to the training data
+        seed (int): Random generator seed
+        backend (QuantumInstance): Qiskit backend instance
+        **kwargs: Other Scikit-Learn SVC parameters (e.g., C, class_weight, etc.)
 
     Returns:
-        qsvc:
-            SciKit-Learn SVC instance
+        qsvc: SciKit-Learn SVC classifier
     """
     
     if len(fm.train_params)>0:
         raise ValueError("Circuit contains variational parameters! QKE algorithm is not applicable!")
-    
+        
     np.random.seed(seed)
     algorithm_globals.random_seed = seed
 
@@ -69,7 +61,11 @@ def QSVM_QKE(fm,
 
     # Use SVC for classification
     qsvc = SVC(kernel=quant_kernel.evaluate, random_state=seed, **kwargs)
-    qsvc.fit(X_train, y_train)
+    
+    # (optional) Fit the classifier if needed
+    if X_train and y_train:
+        qsvc.fit(X_train, y_train)
+        
     return qsvc
 
 
@@ -77,7 +73,7 @@ def QSVM_QKE(fm,
 def QSVM_QKT(fm, 
              X_train, y_train, 
              scale0=2.0, maxiter=100, seed=None,
-             init_params = None,
+             init_params=None,
              backend=None,
              verbose=False,
              plot=False,
@@ -87,32 +83,19 @@ def QSVM_QKT(fm,
     Wrapper around the QKT and SVM routines.
 
     Args:
-        fm (QuantumCircuit):
-            Quantum Feature Map circuit
-        X_train, y_train (nd.array):
-            Training data
-        X_test, y_test (nd.array):
-            Testing data
-        scale0 (float=2.0):
-            Initial value of the scaling parameter
-        init_params (list):
-            Starting values for the optimization parameters
-        maxiter (int=100):
-            Maximum number of the SPSA optimizer iterations
-        seed (int):
-            Random generator seed
-        backend (QuantumInstance):
-            Qiskit Backend instance
-        verbose (bool):
-            Increased output verbosity
-        plot (bool):
-            Visualize the loss function and the optimized kernel matrix
-        **kwargs (dict):
-            Other Scikit-Learn SVC parameters
+        fm (QuantumCircuit): Quantum Feature Map circuit
+        X_train, y_train (nd.array): Training data
+        scale0 (float=2.0): Initial value of the data scaling prefactor
+        init_params (nd.array): Starting values for the optimization parameters
+        maxiter (int=100): Maximum number of the SPSA optimizer iterations
+        seed (int): Random generator seed
+        backend (QuantumInstance): Qiskit Backend instance
+        verbose (bool): Increased output verbosity
+        plot (bool): Visualize the loss function and the optimized kernel matrix
+        **kwargs (dict): Other Scikit-Learn SVC parameters
 
     Returns:
-        qsvc:
-            SciKit-Learn SVC instance
+        qsvc: SciKit-Learn SVC classifier
     """
 
     if init_params is None:
@@ -154,22 +137,14 @@ def quantum_kernel_trainer(
     Adopted from https://qiskit.org/documentation/machine-learning/tutorials/08_quantum_kernel_trainer.html
     
     Args:
-        fm (QuantumCircuit):
-            Quantum Feature Map circuit
-        X_train, y_train (nd.array):
-            Training data
-        initial_point (nd.array):
-            Initial values for variational circuit parameters
-        maxiter (int=100):
-            Maximum number of optimization iterations
-        backend (QuantumInstance):
-            Qiskit Backend instance
-        seed (int=None):
-            Random number generator seed
-        plot (bool=True):
-            Visualize the loss function and the optimized kernel matrix    
-        **kwargs (dict):
-            Other Scikit-Learn SVC parameters
+        fm (QuantumCircuit): Quantum Feature Map circuit
+        X_train, y_train (nd.array): Training data
+        initial_point (nd.array): Initial values for variational circuit parameters
+        maxiter (int=100): Maximum number of optimization iterations
+        backend (QuantumInstance): Qiskit Backend instance
+        seed (int=None): Random number generator seed
+        plot (bool=True): Visualize the loss function and the optimized kernel matrix    
+        **kwargs (dict): Other Scikit-Learn SVC parameters
     """
     
     np.random.seed(seed)
@@ -292,21 +267,17 @@ def plot_kernel_loss(fm, X_train, y_train, params, backend=None, grid=[1, 10, 10
     only varying the first optimization parameter (the scaling data prefactor).
     
     Args:
-        fm (QuantimCircuit):
-            Qiskit QuantumCircuit instance
-        X_train, y_train (nd.array):
-            Training data
-        params (nd.array):
-            Starting values of the variational circuit parameters
-        backend (QuantunInstance=None):
-            Qiskit Backend instance
-        seed (int=None):
-            Random number generator seed
-        grid (list):
-            [start, end, N_points] - defined the range of values (x-axis) where 
-                                     the loss function is computed and visualized
+        fm (QuantimCircuit): Quantum Feature Map circuit
+        X_train, y_train (nd.array): Training data
+        params (nd.array): Starting values for the variational circuit parameters
+        backend (QuantunInstance=None): Qiskit Backend instance
+        seed (int=None): Random number generator seed
+        grid (list): [start, end, N_points] - range of values (x-axis) where 
+                     the loss function is computed and visualized
     """
+    
     algorithm_globals.random_seed = seed
+    
     if backend is None:
         # default backend
         backend = QuantumInstance(
