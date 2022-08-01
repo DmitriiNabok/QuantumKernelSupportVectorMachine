@@ -1,5 +1,5 @@
 from qiskit import QuantumCircuit
-from qiskit.circuit import ParameterVector
+from qiskit.circuit import Parameter, ParameterVector
 from qiskit.visualization import circuit_drawer
 
 from typing import Sequence, Union
@@ -15,7 +15,7 @@ class QuantumFeatureMap(QuantumCircuit):
         num_layers: int,
         gates: Sequence[str],
         scale: bool = False,
-        alpha: float = 2.0,
+        alpha: float = None,
         repeat: bool = True,
         entanglement: Union[str, list] = "linear",
         name: str = "QuantumFeatureMap",
@@ -61,9 +61,9 @@ class QuantumFeatureMap(QuantumCircuit):
             name=name,
         )
 
-        # employ the data scaling prefactor as a hyperparameter
+        # data scaling prefactor as a model parameter
         self.scale = scale
-        self.alpha = alpha
+        self.alpha = Parameter('α')
 
         # connection map for 2 parameter gates
         if type(entanglement) is str:
@@ -94,6 +94,10 @@ class QuantumFeatureMap(QuantumCircuit):
         if 0 < i_encod and i_encod < self.num_features:
             print('\nWarning:')
             print('\tNot all features have been encoded. Check your input and either increase the number of layers or the number of qubits.\n')
+
+        # apply constant data scaling prefactor
+        if not self.scale and alpha:
+            self.assign_parameters({self.alpha: alpha}, inplace=True)
             
         return
 
