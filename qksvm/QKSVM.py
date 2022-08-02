@@ -39,8 +39,9 @@ def QSVM_QKE(fm,
         qsvc: SciKit-Learn SVC classifier
     """
     
-    if len(fm.train_params)>0:
-        raise ValueError("Circuit contains variational parameters! QKE algorithm is not applicable!")
+    if hasattr(fm, 'train_params'):
+        if len(fm.train_params)>0:
+            raise ValueError("Circuit contains variational parameters! QKE algorithm is not applicable!")
         
     np.random.seed(seed)
     algorithm_globals.random_seed = seed
@@ -69,6 +70,89 @@ def QSVM_QKE(fm,
     return qsvc
 
 
+#-------------------------------------------------------------------    
+class QSVC(SVC):
+    """
+    Extended svm.SVC Scikit-Learn class that supports quantum kernels.
+    Can be applied in GridSearchCV for optimizing SVM hyperparameters.
+    
+    Args:
+        fm (QuantumCircuit): Qiskit quantum feature map circuit
+        alpha (float=2.0): Input data scaling prefactor
+        seed (int=None): Random generator seed
+        backend (QuantumInstance=None): Qiskit backend instance
+        ... : Other parameters from svm.SVC (e.g., C, class_weight, etc.)
+    
+    Returns:
+        Scikit-Learn svm.SVC object with the quantum kernel
+    """
+    
+    def __init__(
+        self,
+        fm,
+        alpha=2.0,
+        backend=None,
+        C=1.0,
+        shrinking=True,
+        probability=False,
+        tol=1e-3,
+        cache_size=200,
+        class_weight=None,
+        verbose=False,
+        max_iter=-1,
+        decision_function_shape="ovr",
+        break_ties=False,
+        random_state=None,
+    ):
+
+        SVC.__init__(
+            self,
+            tol=tol,
+            C=C,
+            shrinking=shrinking,
+            probability=probability,
+            cache_size=cache_size,
+            class_weight=class_weight,
+            verbose=verbose,
+            max_iter=max_iter,
+            decision_function_shape=decision_function_shape,
+            break_ties=break_ties,
+            random_state=random_state,
+        )
+
+        if hasattr(fm, 'train_params'):
+            if len(fm.train_params)>0:
+                raise ValueError("Circuit contains variational parameters! QKE algorithm is not applicable!")
+                
+        self.fm = fm
+        self.alpha = alpha
+        self.backend = backend
+        
+        if self.backend is None:
+            np.random.seed(self.random_state)
+            algorithm_globals.random_seed = self.random_state
+            self.backend = QuantumInstance(
+                AerSimulator(method="statevector"),
+                shots=1024, seed_simulator=self.random_state, seed_transpiler=self.random_state,
+                backend_options = {'method': 'automatic', 
+                                   'max_parallel_threads': 0,
+                                   'max_parallel_experiments': 0,
+                                   'max_parallel_shots': 0},
+            )        
+        
+    def fit(self, X, y):
+        # print("fit", self.alpha, self.C)
+        _fm = self.fm.assign_parameters({self.fm.alpha: self.alpha})
+        self.kernel = QuantumKernel(_fm, quantum_instance=self.backend).evaluate
+        SVC.fit(self, X, y)
+        return self
+    
+    def set_params(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        return self
+
+    
 #-------------------------------------------------------------------    
 def QSVM_QKT(fm, 
              X_train, y_train, 
