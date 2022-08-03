@@ -64,7 +64,7 @@ def QSVM_QKE(fm,
     qsvc = SVC(kernel=quant_kernel.evaluate, random_state=seed, **kwargs)
     
     # (optional) Fit the classifier if needed
-    if X_train and y_train:
+    if (X_train is not None) and (y_train is not None):
         qsvc.fit(X_train, y_train)
         
     return qsvc
