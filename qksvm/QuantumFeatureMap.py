@@ -29,7 +29,7 @@ class QuantumFeatureMap(QuantumCircuit):
             num_layers: Number of repeating layers (feature map depth)
             gates: List of gates used to encode (CAPITAL) and train (small) the data
             scale: Include data scaling prefactor as an additional variational parameter (default=False)
-            alpha: Value of the fixed data scaling prefactor when scale=False (default=2.0)
+            alpha: Value of the fixed data scaling prefactor when scale=False (default=None)
             repeat: Repeating encoding scheme, which works in the case when num_features < num_qubits (default=True)
             entanglement: Entanglement structure of the circuit ('linear', 'ring', 'full') (default='linear')
             name: Name of QuantumCircuit object
@@ -96,8 +96,10 @@ class QuantumFeatureMap(QuantumCircuit):
             print('\tNot all features have been encoded. Check your input and either increase the number of layers or the number of qubits.\n')
 
         # apply constant data scaling prefactor
-        if not self.scale and alpha:
-            self.assign_parameters({self.alpha: alpha}, inplace=True)
+        if not self.scale:
+            if alpha is not None:
+                self.assign_parameters({self.alpha: alpha}, inplace=True)
+                self.alpha = alpha
             
         return
 

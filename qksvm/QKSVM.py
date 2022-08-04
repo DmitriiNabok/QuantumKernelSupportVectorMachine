@@ -21,7 +21,6 @@ from sklearn.svm import SVC
 
 #-------------------------------------------------------------------    
 def QSVM_QKE(fm,
-             X_train=None, y_train=None,
              seed=None,
              backend=None,
              **kwargs,
@@ -62,11 +61,6 @@ def QSVM_QKE(fm,
 
     # Use SVC for classification
     qsvc = SVC(kernel=quant_kernel.evaluate, random_state=seed, **kwargs)
-    
-    # (optional) Fit the classifier if needed
-    if (X_train is not None) and (y_train is not None):
-        qsvc.fit(X_train, y_train)
-        
     return qsvc
 
 
@@ -90,7 +84,7 @@ class QSVC(SVC):
     def __init__(
         self,
         fm,
-        alpha=2.0,
+        alpha=None,
         backend=None,
         C=1.0,
         shrinking=True,
@@ -125,8 +119,16 @@ class QSVC(SVC):
                 raise ValueError("Circuit contains variational parameters! QKE algorithm is not applicable!")
                 
         self.fm = fm
-        self.alpha = alpha
         self.backend = backend
+        
+        if isinstance(self.fm.alpha, float) and alpha is not None:
+            print('\nWarning (QSVC.fit()):')
+            print('\tFeature map circuit has already a fixed value for the scaling parameter alpha predefined earlier in QuantumFeatureMap.')
+            print(f"\tSpecified alpha={alpha} will have no effect!")
+        if alpha is None:
+            self.alpha = 2.0
+        else:
+            self.alpha = alpha
         
         if self.backend is None:
             np.random.seed(self.random_state)
@@ -141,8 +143,10 @@ class QSVC(SVC):
             )        
         
     def fit(self, X, y):
-        # print("fit", self.alpha, self.C)
-        _fm = self.fm.assign_parameters({self.fm.alpha: self.alpha})
+        if isinstance(self.fm.alpha, float):
+            _fm = self.fm
+        else:
+            _fm = self.fm.assign_parameters({self.fm.alpha: self.alpha})
         self.kernel = QuantumKernel(_fm, quantum_instance=self.backend).evaluate
         SVC.fit(self, X, y)
         return self
