@@ -158,6 +158,78 @@ class QSVC(SVC):
 
     
 #-------------------------------------------------------------------    
+def QuantumKernelOptimizer(
+        fm, 
+        X, y,
+        init_params=None,
+        seed=None, 
+        backend=None, 
+        optimizer=None,
+        plot=False,
+    ):
+    """
+    Quantum Kernel Training algorithm.
+    
+    Args:
+        fm (QuantumCircuit): Quantum Kernel (feature map) circuit
+        X, y (nd.array): Training data
+        init_params (nd.array): Starting values for the optimization parameters
+        seed (int): Random generator seed
+        backend (QuantumInstance): Qiskit Backend instance
+
+    Returns:
+        qkt_results (QuantumKernelTrainerResult): Results of the QKT algorithm
+    """
+    
+    if init_params is None:
+        # Set initial parameters
+        np.random.seed(seed)
+        init_params = np.random.uniform(0, 2*np.pi, len(fm.train_params))
+        if fm.scale:
+            init_params[0] = 2.0
+    
+    if backend is None:
+        # Default backend
+        algorithm_globals.random_seed = seed
+        backend = QuantumInstance(
+            AerSimulator(method="statevector"),
+            shots=1024, seed_simulator=seed, seed_transpiler=seed,
+            backend_options = {'method': 'automatic', 
+                               'max_parallel_threads': 0,
+                               'max_parallel_experiments': 0,
+                               'max_parallel_shots': 0},
+        )
+
+
+    if optimizer is None:
+        # Set up the default optimizer SPSA
+        optimizer = SPSA(
+            maxiter=100,
+            learning_rate=None,
+            perturbation=None,
+            # second_order=True,
+        )
+        
+    # Instantiate Quantum Kernel
+    quant_kernel = QuantumKernel(
+        fm,
+        user_parameters=fm.train_params,
+        quantum_instance=backend
+    )
+    
+    # Instantiate a quantum kernel trainer
+    QKT = QuantumKernelTrainer(
+        quantum_kernel=quant_kernel,
+        loss="svc_loss",
+        optimizer=optimizer,
+        initial_point=init_params,
+    )
+
+    # Train the kernel
+    return QKT.fit(X, y)
+
+
+#-------------------------------------------------------------------    
 def QSVM_QKT(fm, 
              X_train, y_train, 
              scale0=2.0, maxiter=100, seed=None,
@@ -232,7 +304,6 @@ def quantum_kernel_trainer(
         backend (QuantumInstance): Qiskit Backend instance
         seed (int=None): Random number generator seed
         plot (bool=True): Visualize the loss function and the optimized kernel matrix    
-        **kwargs (dict): Other Scikit-Learn SVC parameters
     """
     
     np.random.seed(seed)
@@ -260,6 +331,7 @@ def quantum_kernel_trainer(
                     callback=cb_qkt.callback,
                     learning_rate=None,
                     perturbation=None,
+                    # second_order=True,
                )
 
     # Instantiate a quantum kernel trainer
