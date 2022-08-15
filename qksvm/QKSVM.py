@@ -11,7 +11,7 @@ from qiskit.providers.aer import AerSimulator
 from qiskit.algorithms.optimizers import SPSA
 from qiskit_machine_learning.kernels import QuantumKernel
 from qiskit_machine_learning.kernels.algorithms import QuantumKernelTrainer
-from qiskit_machine_learning.utils.loss_functions import KernelLoss
+from qiskit_machine_learning.utils.loss_functions import KernelLoss, SVCLoss
 from qiskit.utils import algorithm_globals
 
 # SciKit-Learn imports
@@ -165,6 +165,7 @@ def QuantumKernelOptimizer(
         seed=None, 
         backend=None, 
         optimizer=None,
+        loss=None,
         plot=False,
     ):
     """
@@ -176,6 +177,8 @@ def QuantumKernelOptimizer(
         init_params (nd.array): Starting values for the optimization parameters
         seed (int): Random generator seed
         backend (QuantumInstance): Qiskit Backend instance
+        optimizer (Optimizer): An instance of ``Optimizer`` to be used in training
+        loss (SVCLoss): User provided loss function
 
     Returns:
         qkt_results (QuantumKernelTrainerResult): Results of the QKT algorithm
@@ -218,9 +221,12 @@ def QuantumKernelOptimizer(
     )
     
     # Instantiate a quantum kernel trainer
+    if loss is None:
+        loss = SVCLoss(C=1.0, class_weight=None)
+        
     QKT = QuantumKernelTrainer(
         quantum_kernel=quant_kernel,
-        loss="svc_loss",
+        loss=loss,
         optimizer=optimizer,
         initial_point=init_params,
     )
