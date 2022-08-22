@@ -503,3 +503,18 @@ class QKTCallback:
 
     def clear_callback_data(self):
         self._data = [[] for i in range(5)]
+
+#-------------------------------------------------------------------
+class TerminationChecker:
+    def __init__(self, tol: float, N: int=5):
+        self.tol = tol
+        self.N = N
+        self.values = []
+    def __call__(self, nfev, parameters, value, stepsize, accepted) -> bool:
+        self.values.append(value)
+        if len(self.values) > self.N:
+            last_values = self.values[-self.N:]
+            std = np.std(last_values)
+            if std < self.tol:
+                return True
+        return False

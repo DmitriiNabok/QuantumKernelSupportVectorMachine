@@ -87,13 +87,18 @@ class QuantumFeatureMap(QuantumCircuit):
                 if s.isupper():
                     # encoding sublayer
                     i_encod = self.build_circuit(s.lower(), self.encod_params, i_encod)
+                    if self.repeat and i_encod == self.num_features:
+                        i_encod = 0
                 if s.islower():
                     # training sublayer
                     i_train = self.build_circuit(s.lower(), self.train_params, i_train)
+            if not self.repeat:
+                if i_encod == self.num_features:
+                    i_encod = 0
           
-        if 0 < i_encod and i_encod < self.num_features:
+        if i_encod%self.num_features != 0:
             print('\nWarning:')
-            print('\tNot all features have been encoded. Check your input and either increase the number of layers or the number of qubits.\n')
+            print('\tNot all features seem to be equally encoded. Check your input and either increase the number of layers or the number of qubits.\n')
 
         # apply constant data scaling prefactor
         if not self.scale:
@@ -193,7 +198,7 @@ class QuantumFeatureMap(QuantumCircuit):
         #-------------------------------------------------------------
         class AllDone(Exception): pass
         def check(j):
-            if j == num_params:
+            if j >= num_params:
                 raise AllDone
             
         num_params = len(params)
@@ -218,7 +223,5 @@ class QuantumFeatureMap(QuantumCircuit):
         except AllDone:
             pass
         
-        self.barrier() 
-        if j == num_params: j = 0
-        
+        self.barrier()        
         return j
