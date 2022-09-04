@@ -1,10 +1,10 @@
 
-def get_scores(model, X, y):
+def get_scores(model, X, y, average='weighted'):
     y_pred = model.predict(X)
     from sklearn import metrics
     acc = metrics.balanced_accuracy_score(y_true=y, y_pred=y_pred)
-    f1  = metrics.f1_score(y_true=y, y_pred=y_pred)
-    roc = metrics.roc_auc_score(y, model.decision_function(X))
+    f1  = metrics.f1_score(y_true=y, y_pred=y_pred, average=average)
+    roc = metrics.roc_auc_score(y, model.decision_function(X), average=average)
     mcc = metrics.matthews_corrcoef(y_true=y, y_pred=y_pred)
     return [acc, f1, roc, mcc]
 
