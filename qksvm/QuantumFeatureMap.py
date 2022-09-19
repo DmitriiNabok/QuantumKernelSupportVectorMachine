@@ -96,14 +96,17 @@ class QuantumFeatureMap(QuantumCircuit):
                 if i_encod == self.num_features:
                     i_encod = 0
           
-        if i_encod%self.num_features != 0:
-            print('\nWarning:')
-            print('\tNot all features seem to be equally encoded. Check your input and either increase the number of layers or the number of qubits.\n')
+        # if i_encod%self.num_features != 0:
+        #     print('\nWarning:')
+        #     print('\tNot all features seem to be equally encoded. Check your input and either increase the number of layers or the number of qubits.\n')
 
         # apply constant data scaling prefactor
         if not self.scale:
             if alpha is not None:
-                self.assign_parameters({self.alpha: alpha}, inplace=True)
+                try:
+                    self.assign_parameters({self.alpha: alpha}, inplace=True)
+                except:
+                    pass
                 self.alpha = alpha
             
         return
