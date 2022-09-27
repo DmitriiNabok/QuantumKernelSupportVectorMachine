@@ -120,11 +120,17 @@ class QuantumFeatureMap(QuantumCircuit):
         """ 
         self.entanglement = []
         if entanglement == 'linear':
+            for i in range(self.num_qubits-1):
+                self.entanglement.append([i, i+1])
+        elif entanglement == 'linear_':
             for i in range(0, self.num_qubits-1, 2):
                 self.entanglement.append([i, i+1])
             for i in range(1, self.num_qubits-1, 2):
                 self.entanglement.append([i, i+1])
         elif entanglement == 'ring':
+            for i in range(self.num_qubits):
+                self.entanglement.append([i, (i+1)%self.num_qubits])
+        elif entanglement == 'ring_':
             for i in range(0, self.num_qubits, 2):
                 self.entanglement.append([i, (i+1)%self.num_qubits])
             for i in range(1, self.num_qubits, 2):

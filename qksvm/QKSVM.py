@@ -118,15 +118,17 @@ class QSVC(SVC):
                 
         self.fm = fm
         self.backend = backend
-        
-        if isinstance(self.fm.alpha, float) and alpha is not None:
-            print('\nWarning (QSVC.fit()):')
-            print('\tFeature map circuit has already a fixed value for the scaling parameter alpha predefined earlier in QuantumFeatureMap.')
-            print(f"\tSpecified alpha={alpha} will have no effect!")
-        if alpha is None:
-            self.alpha = 2.0
-        else:
-            self.alpha = alpha
+
+        self.alpha = None
+        if self.fm.alpha is not None:
+            if isinstance(self.fm.alpha, float) and alpha is not None:
+                print('\nWarning (QSVC.fit()):')
+                print('\tFeature map circuit has already a fixed value for the scaling parameter alpha predefined earlier in QuantumFeatureMap.')
+                print(f"\tSpecified alpha={alpha} will have no effect!")
+            if alpha is None:
+                self.alpha = 2.0
+            else:
+                self.alpha = alpha
         
         if self.backend is None:
             np.random.seed(self.random_state)
@@ -140,10 +142,10 @@ class QSVC(SVC):
             )
         
     def fit(self, X, y):
-        if isinstance(self.fm.alpha, float):
-            _fm = self.fm
-        else:
-            _fm = self.fm.assign_parameters({self.fm.alpha: self.alpha})
+        _fm = self.fm
+        if self.alpha is not None:
+            if not isinstance(self.fm.alpha, float):
+                _fm = self.fm.assign_parameters({self.fm.alpha: self.alpha})
         self.kernel = QuantumKernel(_fm, quantum_instance=self.backend).evaluate
         SVC.fit(self, X, y)
         return self
