@@ -10,8 +10,9 @@ def get_scores(model, X, y, average='weighted'):
 
 
 def print_scores(scores, title=None):
-    print("")
-    print(title)
+    if title is not None:
+        print("")
+        print(title)
     print(f"{'  Balanced accuracy: ':>22} {scores[0]:>.2f}")
     print(f"{'  F1: ':>22} {scores[1]:>.2f}")
     print(f"{'  ROC_AUC: ':>22} {scores[2]:>.2f}")
@@ -20,8 +21,9 @@ def print_scores(scores, title=None):
     
 def print_cv_scores(scores, title=None):
     from numpy import array, mean, std
-    print("")
-    print(title)
+    if title is not None:
+        print("")
+        print(title)
     scores_ = array(scores)
     print(f"{'  Balanced accuracy: ':>22} {mean(scores_[:,0]):>.2f} +- {std(scores_[:,0]):>.2f}")
     print(f"{'  F1: ':>22} {mean(scores_[:,1]):>.2f} +- {std(scores_[:,1]):>.2f}")

@@ -2,6 +2,7 @@
 import numpy as np
 
 # Qiskit imports
+from qiskit import QuantumCircuit
 from qiskit.utils import QuantumInstance
 from qiskit.providers.aer import AerSimulator
 from qiskit_machine_learning.kernels import QuantumKernel
@@ -88,14 +89,18 @@ class QKSVC(SVC):
         
     def fit(self, X, y):
         
-        self.fm = QuantumFeatureMap(
-            num_features=len(X[0]), 
-            num_qubits=self.n_qubits,
-            num_layers=self.n_layers,
-            gates=[s.upper() for s in self.feature_map], entanglement=self.entanglement,
-            alpha=self.alpha,
-            repeat=True, scale=False,
-        )
+        if isinstance(self.feature_map, list):     
+            self.fm = QuantumFeatureMap(
+                num_features=len(X[0]), 
+                num_qubits=self.n_qubits,
+                num_layers=self.n_layers,
+                gates=[s.upper() for s in self.feature_map], entanglement=self.entanglement,
+                alpha=self.alpha,
+                repeat=True, scale=False,
+            )
+        elif isinstance(self.feature_map, QuantumCircuit):
+            self.fm = self.feature_map
+            self.fm.assign_parameters({self.fm.alpha: self.alpha}, inplace=True)
         # print(self.fm.draw(plot_barriers=False, fold=120))
 
         self.kernel = QuantumKernel(self.fm, quantum_instance=self.backend).evaluate
