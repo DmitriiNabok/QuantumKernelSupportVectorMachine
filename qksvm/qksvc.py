@@ -1,5 +1,6 @@
 # External libraries
 import numpy as np
+import copy
 
 # Qiskit imports
 from qiskit import QuantumCircuit
@@ -99,7 +100,7 @@ class QKSVC(SVC):
                 repeat=True, scale=False,
             )
         elif isinstance(self.feature_map, QuantumCircuit):
-            self.fm = self.feature_map
+            self.fm = copy.deepcopy(self.feature_map)
             self.fm.assign_parameters({self.fm.alpha: self.alpha}, inplace=True)
         # print(self.fm.draw(plot_barriers=False, fold=120))
 

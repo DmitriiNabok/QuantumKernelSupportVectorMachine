@@ -17,6 +17,91 @@ from qiskit.algorithms.variational_algorithm import VariationalResult
 from qksvm.LossFunctions import SVCLoss, KTALoss
 
 
+def QKTKernel(
+    fm,
+    X_train, y_train, 
+    init_params, 
+    C=1.0, class_weight=None,
+    maxiter=100,
+    plot=False, seed=None,
+):
+    """ 
+    User template to control all the paramaters of the QKT algorithm and 
+    visualize the training info.
+    
+    Return: 
+        qkt_results object that contains the optimized kernel: qkt_results.quantum_kernel.evaluate
+    """
+
+    #----------------------
+    # Select loss function
+    #----------------------
+    from qiskit_machine_learning.utils.loss_functions import SVCLoss
+    loss = SVCLoss(C=C, class_weight=class_weight)
+
+    #----------------------
+    # Setup optimizer
+    #----------------------
+    from qksvm.QuantumKernelTraining import QKTCallback
+    callback = QKTCallback()
+
+    from qiskit.algorithms.optimizers import SPSA
+    from qksvm.QuantumKernelTraining import TerminationChecker
+    optimizer = SPSA(
+        maxiter=maxiter,
+        learning_rate=None,
+        perturbation=None,
+        callback=callback.callback,
+        termination_checker=TerminationChecker(0.01, N=7),
+    )
+
+    #------------------------
+    # Choose quantum backend
+    #------------------------
+    from qiskit.utils import QuantumInstance
+    from qiskit.providers.aer import AerSimulator
+    backend = QuantumInstance(
+        AerSimulator(
+            method='statevector',
+            max_parallel_threads=8,
+        ),
+        seed_simulator=seed, seed_transpiler=seed,
+    )
+
+    #----------------------------
+    # Run quantum kernel trainer
+    #----------------------------
+    from qksvm.QuantumKernelTraining import QuantumKernelOptimizer
+    qkt_results = QuantumKernelOptimizer(
+        fm, 
+        X_train, y_train,
+        init_params=init_params,
+        backend=backend, 
+        optimizer=optimizer,
+        loss=loss,
+        seed=seed,
+    )
+
+    print('SVCLoss optimal value: ', qkt_results.optimal_value)
+    print('Optimal parameters:', qkt_results.optimal_point)
+    if plot:
+        # Visualize the optimization workflow
+        plot_data = callback.get_callback_data()
+        plt.rcParams['font.size'] = 20
+        fig, ax = plt.subplots(1, 1, figsize=(7, 5))
+        ax.plot([i+1 for i in range(len(plot_data[0]))],
+                np.array(plot_data[2]),
+                c='k',
+                marker='o'
+        )
+        ax.set_xlabel('Iterations')
+        ax.set_ylabel('Loss')
+        ax.title.set_text('Optimization')
+        plt.show()
+        
+    return qkt_results
+
+
 def QuantumKernelOptimizer(
         fm, 
         X, y,
