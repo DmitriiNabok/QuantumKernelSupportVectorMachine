@@ -4,9 +4,11 @@ The repository provides implementation of the quantum kernel based support vecto
 
 Quantum kernel machine learning is using the idea to apply a quantum feature map $`\phi(\vec{x})`$ to express a classical data point $`\vec{x}`$ in a quantum Hilbert space $`|\phi(\vec{x})\rangle\langle\phi(\vec{x})|`$.
 In this way, the kernel matrix can be estimated with a quantum computer as
+
 ```math
 K_{ij} = \left| \langle \phi(\vec{x}_j) | \phi(\vec{x}_i) \rangle\right|^2.
 ```
+
 To setup of the quantum feature map $`\phi(\vec{x})`$ one needs to provide a quantum circuit that embeds a data vector $`\vec{x}`$ into a quantum state. There are multiple ways how to build such a circuit. In this implementation, we are following the approach from [Supervised learning with quantum enhanced feature spaces](https://arxiv.org/pdf/1804.11326.pdf) to encode the classical data with a help of quantum parametric gates that describe rotation of a qubit in the Hilbert space.
 For understanding the basics of this approach, received a name quantum kernel embedding (QKE), we refer to the Qiskit tutorial [Quantum Kernel Machine Learning](https://qiskit.org/documentation/machine-learning/tutorials/03_quantum_kernel.html).
 
@@ -53,9 +55,17 @@ python -m ipykernel install --user --name=qksvm
 
 ## Usage
 
-The notebooks exemplify the usage of the implemented functions and algorithms.
+The `test` folder contains test and production applications of the QKSVM library to a group of datasets. All the runs contain as a reference results obtained with the classical RBF kernel. Different quantum methods applied to classify the datasets are indicated with the following abbreviations in the notebook names:
 
-* [SciKit-Learn moons](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_moons.html) dataset is classified using RBF and QKE SVM in `moons-qke.ipynb`.
-* Quantum Kernel Training algorithm (QKT-SVM) is applied to the [SciKit-Learn moons](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_moons.html) moons dataset in `moons-qkt.ipynb`.
-* In `circs-qkt.ipynb`, QKT QSVM algorithm is applied to a more challenging modified version of [SciKit-Learn circles](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_circles.html) dataset consisted of 4 diffused folded circles.
-* Quantum Feature Map circuit generator can be tested in `test_QFM.ipynb`.
+* `qke`: the quantum kernel is set up following the quantum feature map circuit.
+* `qke-hyper`: the grid search cross-validation technique is applied to optimize the quantum kernel hyperparameters.
+* `qkt`: the quantum kernel training method.
+
+Current version contains:
+
+* SciKit-Learn's datasets:
+  * Synthetic: [blobs](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_blobs.html), [circles](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_circles.html), [Gaussian quantiles](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_gaussian_quantiles.html), [moons](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_moons.html)
+  * Example of a multiclass classification: [Iris dataset](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_iris.html)
+  * Modified circles: 4 folded diffused circles
+* XOR dataset
+* [Qiskit Ad Hoc dataset](https://qiskit.org/documentation/machine-learning/stubs/qiskit_machine_learning.datasets.ad_hoc_data.html)
