@@ -21,38 +21,65 @@ from qiskit.algorithms.optimizers import SPSA, Optimizer
 from qiskit_machine_learning.kernels import QuantumKernel
 from qiskit_machine_learning.utils.loss_functions import KernelLoss
 from qiskit.algorithms.variational_algorithm import VariationalResult
+from qiskit import QuantumCircuit
 
 # Custom loss functions
 from qksvm.LossFunctions import SVCLoss, KTALoss
 from qiskit.algorithms.optimizers import SPSA
 
 
-def QKTKernel(
-    fm,
-    X_train,
-    y_train,
-    init_params,
-    C=1.0,
-    class_weight=None,
-    optimizer=None,
-    loss=None,
-    plot=False,
-    seed=None,
-    backend=None,
-):
+class QuantumKernelTrainerResult(VariationalResult):
+    """Quantum Kernel Trainer Result."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._quantum_kernel: QuantumKernel = None
+
+    @property
+    def quantum_kernel(self) -> Optional[QuantumKernel]:
+        """Return the optimized quantum kernel object."""
+        return self._quantum_kernel
+
+    @quantum_kernel.setter
+    def quantum_kernel(self, quantum_kernel: QuantumKernel) -> None:
+        self._quantum_kernel = quantum_kernel
+
+
+def QuantumKernelTraining(
+    fm: QuantumCircuit,
+    X_train: np.ndarray,
+    y_train: np.ndarray,
+    init_params: Sequence[float],
+    optimizer: Optimizer = None,
+    loss: KernelLoss = None,
+    backend: QuantumInstance = None,
+    plot: bool = False,
+    seed: int = None,
+) -> QuantumKernelTrainerResult:
     """
-    User template to control all the paramaters of the QKT algorithm and
-    visualize the training info.
+    Wrapper around the extended Qiskit QuantumKernelTrainer routine.
+
+    Args:
+        fm (QuantumCircuit): User defined quantum training variational ansatz
+        X_train (np.ndarray): Training data features
+        y_train (np.ndarray): Trainig data labels
+        init_params (list[floats]): Initial values for the optimization parameters
+        optimizer (Optimizer): Qiskit ``Optimizer`` instance
+        loss (str or KernelLoss): Training loss function. Currently supported versions:
+                    'svc_loss' and 'kta_loss'
+        backend (QuantumInstance): Quantum backend specification
+        plot (bool): The loss function optimization evolution would be visualized
+        seed (int): Random state seed
 
     Return:
-        qkt_results object that contains the optimized kernel: qkt_results.quantum_kernel.evaluate
+        qkt_results (QuantumKernelTrainerResult): QKT optimization results
     """
 
     # ----------------------
     # Select loss function
     # ----------------------
     if loss is None:
-        loss = SVCLoss(C=C, class_weight=class_weight)
+        loss = "svc_loss"
 
     # ----------------------
     # Setup optimizer
@@ -64,13 +91,13 @@ def QKTKernel(
             learning_rate=None,
             perturbation=None,
             callback=callback.callback,
-            termination_checker=TerminationChecker(0.01, N=7),
+            termination_checker=TerminationChecker(0.001, N=10),
         )
     else:
         optimizer.callback = callback.callback
 
     # ------------------------
-    # Choose quantum backend
+    # Default quantum backend
     # ------------------------
     if backend is None:
         algorithm_globals.random_seed = seed
@@ -99,7 +126,7 @@ def QKTKernel(
 
     if plot:
         # optimization summary
-        print("SVCLoss optimal value: ", qkt_results.optimal_value)
+        print("Loss function value: ", qkt_results.optimal_value)
         print("Optimal parameters:", qkt_results.optimal_point)
         # Visualize the optimization workflow
         plot_data = callback.get_callback_data()
@@ -119,23 +146,6 @@ def QKTKernel(
     return qkt_results
 
 
-class QuantumKernelTrainerResult(VariationalResult):
-    """Quantum Kernel Trainer Result."""
-
-    def __init__(self) -> None:
-        super().__init__()
-        self._quantum_kernel: QuantumKernel = None
-
-    @property
-    def quantum_kernel(self) -> Optional[QuantumKernel]:
-        """Return the optimized quantum kernel object."""
-        return self._quantum_kernel
-
-    @quantum_kernel.setter
-    def quantum_kernel(self, quantum_kernel: QuantumKernel) -> None:
-        self._quantum_kernel = quantum_kernel
-
-
 class QuantumKernelTrainer:
     def __init__(
         self,
@@ -145,13 +155,15 @@ class QuantumKernelTrainer:
         initial_point: Optional[Sequence[float]] = None,
     ):
         """
+        Modified version of the Qiskit QuantumKernelTrainer:
+          * added support of external loss functions
+          * support of other types of Qiskit provided optimizers
+
         Args:
             quantum_kernel: QuantumKernel to be trained
-            loss (str or KernelLoss): Loss functions available via string:
-                       {'svc_loss': SVCLoss()}.
-                       If a string is passed as the loss function, then the
-                       underlying KernelLoss object will exhibit default
-                       behavior.
+            loss (str or KernelLoss): Kernel training loss function.
+                       The implementation includes support of two types of the default
+                       losses: svc_loss and kta_loss.
             optimizer: An instance of ``Optimizer`` to be used in training. Since no
                        analytical gradient is defined for kernel loss functions, gradient-based
                        optimizers are not recommended for training kernels.

@@ -20,6 +20,7 @@ C = 1.0
 
 
 def test_ini_1():
+    """Initialization with an explicit feature map"""
 
     fm = QuantumFeatureMap(
         num_features=n_features,
@@ -43,7 +44,7 @@ def test_ini_1():
 
 
 def test_ini_2():
-    """Second initialization variant"""
+    """Initialization with an implicit feature map"""
 
     qsvc = QKSVC(
         n_qubits=n_qubits,
@@ -55,19 +56,11 @@ def test_ini_2():
     )
     assert qsvc.n_qubits == n_qubits
     assert qsvc.n_layers == n_layers
-    assert qsvc.alpha == 2.0
-    assert qsvc.C == 1.0
+    assert qsvc.alpha == alpha
+    assert qsvc.C == C
     assert isinstance(qsvc.feature_map, list)
     assert isinstance(qsvc.backend, QuantumInstance)
     assert qsvc.random_state == seed
-
-    qsvc.fit(X, y)
-    y_pred = qsvc.predict([[0.25, 0.25]])
-    print(y_pred)
-    assert y_pred == -1.0
-    y_pred = qsvc.predict([[0.75, 0.75]])
-    print(y_pred)
-    assert y_pred == 1.0
 
 
 def test_kernel():

@@ -3,7 +3,7 @@ from numpy.testing import assert_allclose
 
 import numpy as np
 from qksvm.QuantumFeatureMap import QuantumFeatureMap
-from qksvm.QuantumKernelTraining import QKTKernel
+from qksvm.QuantumKernelTraining import QuantumKernelTraining
 from sklearn.svm import SVC
 from qksvm.scores import get_scores
 from qksvm.QuantumKernelTraining import TerminationChecker
@@ -88,12 +88,11 @@ def test_moons():
     loss = SVCLoss(C=C)
 
     # Apply kernel target alignement
-    qkt = QKTKernel(
+    qkt = QuantumKernelTraining(
         fm,
         X_train,
         y_train,
         init_params,
-        C=C,
         optimizer=optimizer,
         loss=loss,
         backend=backend,
