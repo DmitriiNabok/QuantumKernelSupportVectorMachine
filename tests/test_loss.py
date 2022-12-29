@@ -4,8 +4,8 @@ from numpy.testing import assert_allclose
 import numpy as np
 from qksvm.QuantumFeatureMap import QuantumFeatureMap
 from qksvm.LossFunctions import SVCLoss, KTALoss
-from qiskit.utils import QuantumInstance
 from qiskit.providers.aer import AerSimulator
+from qiskit.utils import QuantumInstance
 from qiskit.utils import algorithm_globals
 from qiskit_machine_learning.kernels import QuantumKernel
 
@@ -27,10 +27,7 @@ y_train = np.array([-1, -1, 1, 1, -1])
 # Quantum backend
 algorithm_globals.random_seed = seed
 backend = QuantumInstance(
-    AerSimulator(
-        method="statevector",
-        max_parallel_threads=0,
-    ),
+    AerSimulator(method="statevector"),
     seed_simulator=seed,
     seed_transpiler=seed,
 )

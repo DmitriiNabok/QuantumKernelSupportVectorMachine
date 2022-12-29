@@ -5,12 +5,13 @@ from setuptools import find_packages, setup
 setup(
     name='qksvm',
     version='0.3',
+    license='MIT',
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
     py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
     install_requires=[
-        'qiskit',
-        'qiskit-machine-learning',
+        'qiskit==0.34.*',
+        'qiskit-machine-learning==0.3.*',
         'scikit-learn',
         'pandas',
         'matplotlib',

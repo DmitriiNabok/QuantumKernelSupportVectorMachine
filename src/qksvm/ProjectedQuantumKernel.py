@@ -3,10 +3,25 @@ from qiskit_machine_learning.neural_networks import OpflowQNN
 from qiskit.quantum_info import Operator, Pauli
 from qiskit.opflow import AerPauliExpectation, StateFn, PauliSumOp, ListOp
 from qiskit.utils import QuantumInstance, algorithm_globals
-from qiskit import Aer
+from qiskit.providers.aer import AerSimulator
 
 
 class ProjectedQuantumKernel:
+    """Projected Quantum Kernel from Huang et al., "Power of Data in Quantum Machine Learning", 
+    https://doi.org/10.1038/s41467-021-22539-9
+
+    Args:
+        fm (QuantumCircuit): Quantum feature map circuit
+        gamma (float=1.0): Projected kernel parameter
+        projection (str="xyz_sum"): Projection type ("x", "y", "z", "xyz_sum", and "xyz")
+        method (str="opflow"): Methods to compute the projections: "opflow" - using Qiskit `OpflowQNN` tools;
+            "statevector" - statevector based implementation (very fast but memory intensive).
+        backend (QuantumInstance): Qiskit quantum backend
+        random_state (int=None): Random generator seed
+        
+    Returns:
+        ProjectedQuantumKernel: self.evaluate() is used for the kernel matrix setup
+    """
     def __init__(
         self,
         fm,
@@ -16,7 +31,6 @@ class ProjectedQuantumKernel:
         backend=None,
         random_state=None,
     ):
-        """ """
         self.fm = fm
         self.num_qubits = self.fm.num_qubits
         self.gamma = gamma
@@ -34,8 +48,7 @@ class ProjectedQuantumKernel:
             }
             algorithm_globals.random_seed = self.seed
             self.backend = QuantumInstance(
-                Aer.get_backend("aer_simulator_statevector"),
-                # Aer.get_backend("aer_simulator"),
+                AerSimulator(method="statevector"),
                 shots=1024,
                 backend_options=backend_options,
                 seed_simulator=self.seed,
@@ -108,11 +121,17 @@ class ProjectedQuantumKernel:
 
     def evaluate(self, X_1, X_2=None):
         """ """
-        X_1_proj = np.array([self.projected_feature_map(x) for x in X_1])
+        if len(X_1.shape) == 1:
+            X_1_proj = np.array([self.projected_feature_map(X_1)])
+        else:
+            X_1_proj = np.array([self.projected_feature_map(x) for x in X_1])
         if X_2 is None:
             X_2_proj = X_1_proj
         else:
-            X_2_proj = np.array([self.projected_feature_map(x) for x in X_2])
+            if len(X_2.shape) == 1:
+                X_2_proj = np.array([self.projected_feature_map(X_2)])
+            else:
+                X_2_proj = np.array([self.projected_feature_map(x) for x in X_2])
 
         kernel = np.zeros(shape=(X_1_proj.shape[0], X_2_proj.shape[0]))
         for i in range(X_1_proj.shape[0]):

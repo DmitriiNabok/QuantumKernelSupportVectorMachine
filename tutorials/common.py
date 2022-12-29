@@ -1,4 +1,5 @@
 def set_figure_params():
+    """Set output figure parameters"""
     from matplotlib import pyplot as plt
     
     # plt.style.use('seaborn')
@@ -83,6 +84,7 @@ def visualize_decision_boundaries(clf, X_train, y_train, X_test, y_test):
     plt.title("SVC decision boundaries", fontsize=28)
     plt.tight_layout()
     plt.show()
+    
     
 def print_scores(clf, X_train, y_train, X_test, y_test):
     """Computes and prints Accuracy and ROC_AUC scores for the training and test datasets"""

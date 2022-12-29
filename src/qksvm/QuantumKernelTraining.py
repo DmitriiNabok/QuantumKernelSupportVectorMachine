@@ -2,7 +2,7 @@
 # https://qiskit.org/documentation/machine-learning/stubs/qiskit_machine_learning.kernels.algorithms.QuantumKernelTrainer.html
 #
 # Added/modified features:
-#   1) Simplified wrapper around the quantum kernel training algorithm
+#   1) Simplified wrapper around the Qiskit QuantumKernelTrainer
 #   2) TerminationChecker with support of preliminary convergence
 #   3) Support of external loss functions
 #   4) Support of external optimizers
@@ -75,6 +75,9 @@ def QuantumKernelTraining(
         qkt_results (QuantumKernelTrainerResult): QKT optimization results
     """
 
+    # for reproducibility (re-)set the random state (used in both SPSA and Backend)
+    algorithm_globals.random_seed = seed
+    
     # ----------------------
     # Select loss function
     # ----------------------
@@ -100,12 +103,8 @@ def QuantumKernelTraining(
     # Default quantum backend
     # ------------------------
     if backend is None:
-        algorithm_globals.random_seed = seed
         backend = QuantumInstance(
-            AerSimulator(
-                method="statevector",
-                max_parallel_threads=0,
-            ),
+            AerSimulator(method="statevector"),
             seed_simulator=seed,
             seed_transpiler=seed,
         )

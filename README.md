@@ -1,6 +1,13 @@
 # Quantum Kernel Support Vector Machine
 
-The repository provides implementation of the quantum kernel based support vector machine algorithm (QSVM) for binary classification.
+Collection of wrappers and tools for the quantum kernel based machine learning tasks.
+
+Specifically, we are dealing with the hybrid quantum/classical algorithm when the kernel matrix is estimated on a quantum computer and imported into the support vector machine (SVM) (the QSVM approach).
+The implementation is built around the [Qiskit](https://qiskit.org/) quantum computer simulation toolkit and includes different variants of the quantum kernel setup.
+[Scikit-Learn](https://scikit-learn.org/stable/) is used as the classical backend.
+
+
+## Theory
 
 Quantum kernel machine learning is using the idea to apply a quantum feature map $`\phi(\vec{x})`$ to express a classical data point $`\vec{x}`$ in a quantum Hilbert space $`|\phi(\vec{x})\rangle\langle\phi(\vec{x})|`$.
 In this way, the kernel matrix can be estimated with a quantum computer as
@@ -9,8 +16,8 @@ In this way, the kernel matrix can be estimated with a quantum computer as
 K_{ij} = \left| \langle \phi(\vec{x}_j) | \phi(\vec{x}_i) \rangle\right|^2.
 ```
 
-To setup of the quantum feature map $`\phi(\vec{x})`$ one needs to provide a quantum circuit that embeds a data vector $`\vec{x}`$ into a quantum state. There are multiple ways how to build such a circuit. In this implementation, we are following the approach from [Supervised learning with quantum enhanced feature spaces](https://arxiv.org/pdf/1804.11326.pdf) to encode the classical data with a help of quantum parametric gates that describe rotation of a qubit in the Hilbert space.
-For understanding the basics of this approach, received a name quantum kernel embedding (QKE), we refer to the Qiskit tutorial [Quantum Kernel Machine Learning](https://qiskit.org/documentation/machine-learning/tutorials/03_quantum_kernel.html).
+To setup the quantum feature map $`\phi(\vec{x})`$ one needs to provide a quantum circuit that embeds a data vector $`\vec{x}`$ into a quantum state. There are multiple ways how to build such a circuit. In this implementation, we are following the approach from [Supervised learning with quantum enhanced feature spaces](https://arxiv.org/pdf/1804.11326.pdf) to encode the classical data with a help of quantum parametric gates that describe rotation of a qubit in the Hilbert space.
+For understanding the basics of this approach, also known as the quantum kernel estimation (QKE) algorithm, we refer to the Qiskit tutorial [Quantum Kernel Machine Learning](https://qiskit.org/documentation/machine-learning/tutorials/03_quantum_kernel.html).
 
 In our implementation, we are using the core subroutines provided in Qiskit to setup and compute the quantum kernel matrix ([`QuantumKernel` instance](https://qiskit.org/documentation/machine-learning/stubs/qiskit_machine_learning.kernels.QuantumKernel.html)).
 
@@ -55,17 +62,10 @@ python -m ipykernel install --user --name=qksvm
 
 ## Usage
 
-The `test` folder contains test and production applications of the QKSVM library to a group of datasets. All the runs contain as a reference results obtained with the classical RBF kernel. Different quantum methods applied to classify the datasets are indicated with the following abbreviations in the notebook names:
+As a quick start, application of the implemented quantum kernel tools for a basic classification problem is examplified in `tutorials`.
+The recommended order to get familiar with the methods and implementation would be
 
-* `qke`: the quantum kernel is set up following the quantum feature map circuit.
-* `qke-hyper`: the grid search cross-validation technique is applied to optimize the quantum kernel hyperparameters.
-* `qkt`: the quantum kernel training method.
-
-Current version contains:
-
-* SciKit-Learn's datasets:
-  * Synthetic: [blobs](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_blobs.html), [circles](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_circles.html), [Gaussian quantiles](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_gaussian_quantiles.html), [moons](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_moons.html)
-  * Example of a multiclass classification: [Iris dataset](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_iris.html)
-  * Modified circles: 4 folded diffused circles
-* XOR dataset
-* [Qiskit Ad Hoc dataset](https://qiskit.org/documentation/machine-learning/stubs/qiskit_machine_learning.datasets.ad_hoc_data.html)
+1) Classical_Kernel.ipynb
+2) Quantum_Kernel_Estimate.ipynb
+3) Quantum_Kernel_Training.ipynb
+4) (optional) Projected_Quantum_Kernel.ipynb
