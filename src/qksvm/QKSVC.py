@@ -7,6 +7,7 @@ from qiskit import QuantumCircuit
 from qiskit.utils import QuantumInstance
 from qiskit.providers.aer import AerSimulator
 from qiskit_machine_learning.kernels import QuantumKernel
+from qksvm.ProjectedQuantumKernel import ProjectedQuantumKernel
 
 # from qiskit_machine_learning.kernels import FidelityQuantumKernel # should be used in newer Qiskit releases
 from qiskit.utils import algorithm_globals
@@ -55,6 +56,7 @@ class QKSVC(SVC):
         decision_function_shape="ovr",
         break_ties=False,
         random_state=None,
+        proj_op=None, proj_gamma=3.0, proj_method="statevector",
     ):
 
         SVC.__init__(
@@ -69,7 +71,7 @@ class QKSVC(SVC):
             max_iter=max_iter,
             decision_function_shape=decision_function_shape,
             break_ties=break_ties,
-            random_state=random_state,
+            random_state=random_state,            
         )
 
         self.n_qubits = n_qubits
@@ -78,6 +80,9 @@ class QKSVC(SVC):
         self.entanglement = entanglement
         self.backend = backend
         self.feature_map = feature_map
+        self.proj_op = proj_op
+        self.proj_gamma = proj_gamma
+        self.proj_method = proj_method
 
         if self.backend is None:
             np.random.seed(self.random_state)
@@ -111,9 +116,19 @@ class QKSVC(SVC):
         elif isinstance(self.feature_map, QuantumCircuit):
             self.fm = copy.deepcopy(self.feature_map)
             self.fm.assign_parameters({self.fm.alpha: self.alpha}, inplace=True)
-        # print(self.fm.draw(plot_barriers=False, fold=120))
 
-        self.kernel = QuantumKernel(self.fm, quantum_instance=self.backend).evaluate
+        # print(self.fm.draw(plot_barriers=False, fold=120))
+       
+        if self.proj_op is None:
+            self.kernel = QuantumKernel(self.fm, quantum_instance=self.backend).evaluate
+        else:
+            self.kernel = ProjectedQuantumKernel(
+                self.fm, gamma=self.proj_gamma, projection=self.proj_op,
+                method=self.proj_method,
+                backend=self.backend,
+                random_state=self.random_state,
+            ).evaluate
+            
         SVC.fit(self, X, y)
         return self
 

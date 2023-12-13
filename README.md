@@ -87,6 +87,6 @@ The recommended order to get familiar with the methods and implementation would 
 2. Quantum_Kernel_Estimate.ipynb
 3. Quantum_Kernel_Training.ipynb
 4. (optional) Projected_Quantum_Kernel.ipynb
-5. (in preparation) Quantum_Kernel_Regression.ipynb
+5. Quantum_Kernel_Regression.ipynb
 
 

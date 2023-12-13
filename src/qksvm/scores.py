@@ -3,6 +3,8 @@
 # ------------------------------------------------------------
 
 import numpy as np
+from copy import deepcopy
+
 from sklearn.model_selection import (
     train_test_split,
     StratifiedShuffleSplit,
@@ -149,18 +151,17 @@ def grid_search_cv(
     return gs
 
 
-def cross_validate_split(model, X, y, train_size=0.8, test_size=0.2, seed=None):
+def cross_validate_split(model, X, y, train_size=0.8, test_size=0.2, n_runs=1, n_splits=5, seed=None):
     """
     Computes the classification scores by taking different train/test combinations.
     """
-    np.random.seed(seed)
+    clf = deepcopy(model)
 
     scores_tr = []
     scores_tt = []
 
-    n_splits = 5
-
-    for _seed in np.random.randint(2**16 - 1, size=5):
+    np.random.seed(seed)
+    for _seed in np.random.randint(2**16 - 1, size=n_runs):
 
         cv = StratifiedShuffleSplit(
             n_splits=n_splits,
@@ -170,9 +171,9 @@ def cross_validate_split(model, X, y, train_size=0.8, test_size=0.2, seed=None):
         )
 
         for train, test in cv.split(X, y):
-            model.fit(X[train], y[train])
-            train_scores = get_scores(model, X[train], y[train])
-            test_scores = get_scores(model, X[test], y[test])
+            clf.fit(X[train], y[train])
+            train_scores = get_scores(clf, X[train], y[train])
+            test_scores = get_scores(clf, X[test], y[test])
             scores_tr.append(train_scores)
             scores_tt.append(test_scores)
 
