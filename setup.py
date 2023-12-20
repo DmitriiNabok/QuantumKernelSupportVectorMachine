@@ -10,12 +10,11 @@ setup(
     package_dir={'': 'src'},
     py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
     install_requires=[
-        'qiskit<=0.35.*',
-        'qiskit-machine-learning<=0.4.*',
+        'qiskit<=0.35',
+        'qiskit-machine-learning<=0.4',
         'scikit-learn',
         'pandas',
         'matplotlib',
         'pytest',
     ],
 )
-

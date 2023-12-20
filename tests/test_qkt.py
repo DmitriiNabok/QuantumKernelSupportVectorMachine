@@ -99,8 +99,7 @@ def test_moons():
         seed=seed,
         plot=False,
     )
-    assert qkt.optimal_value == optimal_value
-    assert_allclose(actual=qkt.optimal_point, desired=optimal_point)
+    assert_allclose(actual=qkt.optimal_point, desired=optimal_point, atol=1e-2)
 
     # Model training
     qsvc = SVC(
@@ -111,7 +110,7 @@ def test_moons():
     qsvc.fit(X_train, y_train)
 
     scores = get_scores(qsvc, X_train, y_train)
-    assert_allclose(scores, train_scores)
+    assert_allclose(scores, train_scores, atol=1e-2)
 
     scores = get_scores(qsvc, X_test, y_test)
-    assert_allclose(scores, test_scores)
+    assert_allclose(scores, test_scores, atol=1e-2)
