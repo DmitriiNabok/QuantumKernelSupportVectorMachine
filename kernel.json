@@ -1,0 +1,5 @@
+{
+  "argv": ["start-kernel.sh", "{connection_file}"],
+  "display_name": "qksvm-docker",
+  "language": "python"
+}

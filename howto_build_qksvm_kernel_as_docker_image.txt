@@ -1,0 +1,22 @@
+--------------------
+D. Nabok, 21.12.2023
+--------------------
+
+I discovered the following way to build the QKSVM library 
+as a Docker container and be able to use its image as JupyterLab as a kernel.
+
+1) Build the Docker container:
+
+docker build --rm --tag qksvm-docker .
+
+2) Manually add the kernel to the JupyterLab kernel folder 
+(on Mac:  ~/Library/Jupyter/kernels)
+
+mkdir -p ~/Library/Jupyter/kernels/qksvm-docker
+cp kernel.json ~/Library/Jupyter/kernels/qksvm-docker
+
+3) Copy start-kernel.sh to a folder included in $PATH (to make it findable by
+system). E.g., I use ~/bin for my scripts.
+
+4) After launching JupyterLab you should find qksvm-docker in the list of available
+kernels.
