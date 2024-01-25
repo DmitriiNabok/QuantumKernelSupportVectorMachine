@@ -1,8 +1,8 @@
 # Quantum Kernel Support Vector Machine
 
-Collection of wrappers and tools for the quantum kernel based machine learning tasks.
+The repository collects tools and simulation protocols for solving classification and regression tasks employing the Quantum Kernel based machine-learning algorithms.
 
-Specifically, we are dealing with the hybrid quantum/classical algorithm when the kernel matrix is estimated on a quantum computer and imported into the support vector machine (SVM) (the QSVM approach).
+Specifically, we are dealing with the hybrid quantum/classical algorithm when the kernel matrix is estimated on a quantum computer (the Quantum Kernel Estimation (QKE) algorithm) and imported into the conventional (classical) Support Vector Machine (SVM) algorithm.
 The implementation is built around the [Qiskit](https://qiskit.org/) quantum computer simulation toolkit and includes different variants of the quantum kernel setup.
 [Scikit-Learn](https://scikit-learn.org/stable/) is used as the classical backend.
 
@@ -16,10 +16,11 @@ The implementation is built around the [Qiskit](https://qiskit.org/) quantum com
 3. Quantum kernel hyperparameter search with Scikit-Learn tools (`GridSearchCV`).
 4. Custom version of the Qiskit quantum kernel training algorithm
    (`QuantumKernelTraining`).
-5. Implementation of the projected quantum kernel technique (by Huang et al.
-   (2021))
+5. Implementation of the projected quantum kernel (`ProjectedQuantumKernel`) technique (by [Huang et al. (2021)](https://www.nature.com/articles/s41467-021-22539-9))
 6. Quantum kernel version of the support vector regression (`QKSVR`) (with the
    support of the quantum circuit hyperparameter search).
+7. Collection of results for QSVM on standard datasets.
+8. ... and more useful stuff.
 
 
 ## Theory
@@ -49,14 +50,7 @@ We provide a simplified wrapper for QKT functions implemented in [Qiskit QKT](ht
 
 ## Installation (with `conda`)
 
-### 0. Clone the repository
-
-```bash
-git clone https://jugit.fz-juelich.de/qai2/qksvm
-cd qksvm
-```
-
-### 1. Create a virtual environment and activate it
+### 1. Create a virtual environment and activate it (e. g., with `conda`)
 
 ```bash
 conda create --name qksvm python=3
@@ -66,7 +60,7 @@ conda activate qksvm
 ### 2. Install packages (including all requirements)
 
 ```bash
-pip install -e . 
+pip install -e .
 ```
 
 ### 3. Add the environment to Jupyter Notebooks
@@ -79,14 +73,11 @@ python -m ipykernel install --user --name=qksvm
 
 ## Usage
 
-For a quick start, applications of the implemented quantum kernel machine
-learning tools are examplified in `tutorials`.
-The recommended order to get familiar with the methods and implementation would be
+For a quick start, the usage of the implemented quantum kernel machine
+learning tools is examplified in `tutorials`.
 
 1. Classical_Kernel.ipynb
 2. Quantum_Kernel_Estimate.ipynb
 3. Quantum_Kernel_Training.ipynb
-4. (optional) Projected_Quantum_Kernel.ipynb
+4. Projected_Quantum_Kernel.ipynb
 5. Quantum_Kernel_Regression.ipynb
-
-
