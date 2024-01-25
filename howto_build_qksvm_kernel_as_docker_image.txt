@@ -3,7 +3,9 @@ D. Nabok, 21.12.2023
 --------------------
 
 I discovered the following way to build the QKSVM library 
-as a Docker container and be able to use its image as JupyterLab as a kernel.
+as a Docker container and be able to use its image as JupyterLab as a kernel:
+
+https://github.com/tamera-lanham/ipython-kernel-docker/tree/master
 
 1) Build the Docker container:
 
